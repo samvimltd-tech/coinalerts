@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trending coins | Coin Alerts</title>
+<meta name="description" content="Coins people are searching for right now. Set a free price alert in one tap.">
+<style>:root{--bg:#f1f4f6;--ink:#14202b;--mute:#5d6b78;--line:#d8e0e6;--accent:#1b5e9b}
+@media (prefers-color-scheme:dark){:root{--bg:#10171d;--ink:#e6edf2;--mute:#93a3b0;--line:#2a3743;--accent:#6aaee8}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif}main{max-width:560px;margin:0 auto;padding:20px 16px}
+a{color:var(--accent)}ul{list-style:none;padding:0}li{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}</style></head>
+<body><main><h1>Trending coins</h1><p><a href="index.html">Back to Coin Alerts</a></p><ul id="list"><li>Loading...</li></ul></main>
+<script>
+fetch("https://api.coingecko.com/api/v3/search/trending").then(r=>r.json()).then(d=>{
+  const ul=document.getElementById("list");ul.innerHTML="";
+  d.coins.forEach(({item:c})=>{const li=document.createElement("li"),a=document.createElement("a");
+    li.append(`${c.name} (${c.symbol})`);a.href=`index.html?coin=${encodeURIComponent(c.id)}`;a.textContent="Set alert";li.append(a);ul.append(li)})
+}).catch(()=>{document.getElementById("list").innerHTML="<li>Trending data is unavailable. Try again shortly.</li>"});
+</script></body></html>
