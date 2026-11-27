@@ -23,7 +23,10 @@ li:first-child{border-top:0}#results li{cursor:pointer}#results li:hover{color:v
 <p>Telegram alerts for 10,000+ coins. New accounts get 7 days of Pro. <a href="trending.html">See trending coins</a></p>
 <div id="msg" role="status"></div>
 
-<section id="auth"><h2>Sign in</h2>
+<section id="auth"><h2>Get started</h2>
+<p>No signup needed. Start now, and save your account later if you like.</p>
+<button id="guest">Start instantly</button>
+<p style="margin:18px 0 8px">Already saved an account?</p>
 <input id="email" type="email" placeholder="you@email.com" autocomplete="email">
 <div class="row"><input id="pw" type="password" placeholder="Password (8+ characters)" autocomplete="current-password"></div>
 <div class="row"><button id="login">Sign in</button><button id="signup" class="ghost" style="width:100%;padding:10px 12px">Create account</button></div></section>
@@ -42,6 +45,11 @@ li:first-child{border-top:0}#results li{cursor:pointer}#results li:hover{color:v
 
 <section><h2>Your alerts</h2><p id="plan"></p><ul id="alerts"></ul>
 <div class="row"><button id="upgrade">Pay with crypto: 30 days of Pro</button></div></section>
+<section id="saveacct" class="hide"><h2>Save your account</h2>
+<p>You are using a guest account that lives in this browser. Add an email and password to keep it and sign in from any device.</p>
+<input id="e2" type="email" placeholder="you@email.com" autocomplete="email">
+<div class="row"><input id="p2" type="password" placeholder="Password (8+ characters)" autocomplete="new-password"></div>
+<div class="row"><button id="save">Save account</button></div></section>
 <button class="ghost" id="logout">Sign out</button>
 <p style="margin-top:16px"><small>Alerts are notifications only, not financial advice. Prices come from CoinGecko and may be delayed.</small></p>
 </div></main>
@@ -98,6 +106,10 @@ const busy=async(btn,label,fn)=>{const c=creds();if(!c)return;const t=btn.textCo
 $("login").onclick=()=>busy($("login"),"Signing in...",async c=>{const{error}=await sb.auth.signInWithPassword(c);say(error?"Sign-in failed: "+error.message:"")});
 $("signup").onclick=()=>busy($("signup"),"Creating...",async c=>{const{data,error}=await sb.auth.signUp(c);
   say(error?"Could not create account: "+error.message:(data.session?"":"Account created. Now tap Sign in."))});
+$("guest").onclick=async()=>{const b=$("guest");b.disabled=true;say("Starting...");
+  try{const{error}=await sb.auth.signInAnonymously();say(error?"Could not start: "+error.message:"")}catch(e){say("Error: "+(e&&e.message?e.message:e))}finally{b.disabled=false}};
+$("save").onclick=async()=>{const email=$("e2").value.trim(),password=$("p2").value;if(!email||password.length<8)return say("Enter your email and a password of 8 or more characters.");
+  say("Saving...");try{const{error}=await sb.auth.updateUser({email,password});say(error?"Could not save: "+error.message:"Saved. You can now sign in from any device.");if(!error)$("saveacct").classList.add("hide")}catch(e){say("Error: "+(e&&e.message?e.message:e))}};
 $("logout").onclick=()=>sb.auth.signOut();
-sb.auth.onAuthStateChange((_e,s)=>{$("auth").classList.toggle("hide",!!s);$("app").classList.toggle("hide",!s);if(s){loadCoins();refresh()}});
+sb.auth.onAuthStateChange((_e,s)=>{$("auth").classList.toggle("hide",!!s);$("app").classList.toggle("hide",!s);if(s){$("saveacct").classList.toggle("hide",!s.user.is_anonymous);loadCoins();refresh()}});
 </script></body></html>
