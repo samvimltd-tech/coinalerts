@@ -91,7 +91,7 @@ async function refresh(){
     b.onclick=async()=>{await sb.from("alerts").delete().eq("id",a.id);refresh()};li.append(s,b);ul.appendChild(li)})}
 
 $("upgrade").onclick=async()=>{const{data,error}=await sb.functions.invoke("crypto-checkout");error?say("Checkout failed. Try again."):location.href=data.url};
-$("login").onclick=async()=>{const{error}=await sb.auth.signInWithOtp({email:$("email").value,options:{emailRedirectTo:location.href}});say(error?error.message:"Check your email for the sign-in link.")};
+$("login").onclick=async()=>{const{error}=await sb.auth.signInWithOtp({email:$("email").value,options:{emailRedirectTo:location.href}});say(error?(/rate limit/i.test(error.message)?"Too many sign-in emails right now. Please wait a few minutes and try again.":"Sign-in failed. Please try again."):"Check your email for the sign-in link.")};
 $("logout").onclick=()=>sb.auth.signOut();
 sb.auth.onAuthStateChange((_e,s)=>{$("auth").classList.toggle("hide",!!s);$("app").classList.toggle("hide",!s);if(s){loadCoins();refresh()}});
 </script></body></html>
