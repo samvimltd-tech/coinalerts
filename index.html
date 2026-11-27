@@ -25,7 +25,8 @@ li:first-child{border-top:0}#results li{cursor:pointer}#results li:hover{color:v
 
 <section id="auth"><h2>Sign in</h2>
 <input id="email" type="email" placeholder="you@email.com" autocomplete="email">
-<div class="row"><button id="login">Email me a sign-in link</button></div></section>
+<div class="row"><input id="pw" type="password" placeholder="Password (8+ characters)" autocomplete="current-password"></div>
+<div class="row"><button id="login">Sign in</button><button id="signup" class="ghost" style="width:100%;padding:10px 12px">Create account</button></div></section>
 
 <div id="app" class="hide">
 <section id="tgbox"><h2>Telegram</h2><p id="tgtext"></p>
@@ -91,7 +92,10 @@ async function refresh(){
     b.onclick=async()=>{await sb.from("alerts").delete().eq("id",a.id);refresh()};li.append(s,b);ul.appendChild(li)})}
 
 $("upgrade").onclick=async()=>{const{data,error}=await sb.functions.invoke("crypto-checkout");error?say("Checkout failed. Try again."):location.href=data.url};
-$("login").onclick=async()=>{const{error}=await sb.auth.signInWithOtp({email:$("email").value,options:{emailRedirectTo:location.href}});say(error?(/rate limit/i.test(error.message)?"Too many sign-in emails right now. Please wait a few minutes and try again.":"Sign-in failed. Please try again."):"Check your email for the sign-in link.")};
+const creds=()=>{const email=$("email").value.trim(),password=$("pw").value;if(!email||password.length<8){say("Enter your email and a password of 8 or more characters.");return null}return{email,password}};
+$("login").onclick=async()=>{const c=creds();if(!c)return;const{error}=await sb.auth.signInWithPassword(c);say(error?"Wrong email or password.":"")};
+$("signup").onclick=async()=>{const c=creds();if(!c)return;const{data,error}=await sb.auth.signUp(c);
+  say(error?(/registered|exists/i.test(error.message)?"That email already has an account. Tap Sign in.":"Could not create the account. Please try again."):(data.session?"":"Account created. Tap Sign in."))};
 $("logout").onclick=()=>sb.auth.signOut();
 sb.auth.onAuthStateChange((_e,s)=>{$("auth").classList.toggle("hide",!!s);$("app").classList.toggle("hide",!s);if(s){loadCoins();refresh()}});
 </script></body></html>
