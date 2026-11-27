@@ -93,9 +93,11 @@ async function refresh(){
 
 $("upgrade").onclick=async()=>{const{data,error}=await sb.functions.invoke("crypto-checkout");error?say("Checkout failed. Try again."):location.href=data.url};
 const creds=()=>{const email=$("email").value.trim(),password=$("pw").value;if(!email||password.length<8){say("Enter your email and a password of 8 or more characters.");return null}return{email,password}};
-$("login").onclick=async()=>{const c=creds();if(!c)return;const{error}=await sb.auth.signInWithPassword(c);say(error?"Wrong email or password.":"")};
-$("signup").onclick=async()=>{const c=creds();if(!c)return;const{data,error}=await sb.auth.signUp(c);
-  say(error?(/registered|exists/i.test(error.message)?"That email already has an account. Tap Sign in.":"Could not create the account. Please try again."):(data.session?"":"Account created. Tap Sign in."))};
+const busy=async(btn,label,fn)=>{const c=creds();if(!c)return;const t=btn.textContent;btn.disabled=true;btn.textContent=label;say("Please wait...");
+  try{await fn(c)}catch(e){say("Error: "+(e&&e.message?e.message:e))}finally{btn.disabled=false;btn.textContent=t}};
+$("login").onclick=()=>busy($("login"),"Signing in...",async c=>{const{error}=await sb.auth.signInWithPassword(c);say(error?"Sign-in failed: "+error.message:"")});
+$("signup").onclick=()=>busy($("signup"),"Creating...",async c=>{const{data,error}=await sb.auth.signUp(c);
+  say(error?"Could not create account: "+error.message:(data.session?"":"Account created. Now tap Sign in."))});
 $("logout").onclick=()=>sb.auth.signOut();
 sb.auth.onAuthStateChange((_e,s)=>{$("auth").classList.toggle("hide",!!s);$("app").classList.toggle("hide",!s);if(s){loadCoins();refresh()}});
 </script></body></html>
